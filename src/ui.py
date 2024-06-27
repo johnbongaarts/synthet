@@ -1,9 +1,8 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QFileDialog, QTextEdit, QProgressBar
-from src.audio_processing import analyze_audio
-from src.genre_classifier import predict_genre
 import os
 import pickle
+from src import MoodDetector, mood_to_label, analyze_audio, predict_genre
 
 class AudioAnalyzerApp(QWidget):
     def __init__(self):
@@ -55,7 +54,13 @@ class AudioAnalyzerApp(QWidget):
     def analyzeAudio(self, file_path):
         self.progress_bar.setValue(0)
         features, basic_stats = analyze_audio(file_path, self.progress_bar)
+        
         genre_prediction, top_genres = predict_genre(features, 'genre_classifier.joblib', 'genre_scaler.joblib')
+
+        # Mood detection
+        mood_detector = MoodDetector.load('mood_scaler.joblib', 'mood_model.joblib')
+        valence, arousal = mood_detector.predict(features)
+        mood_label = mood_to_label(valence, arousal)
 
         results = f"File: {file_path}\n\n"
         results += "Basic Audio Statistics:\n"
@@ -66,6 +71,9 @@ class AudioAnalyzerApp(QWidget):
         results += "Top 3 Genre Probabilities:\n"
         for genre, prob in top_genres:
             results += f"{genre}: {prob:.2f}\n"
+
+        results += f"\nMood: {mood_label}\n"
+        results += f"Valence: {valence:.2f}, Arousal: {arousal:.2f}\n"
 
         self.text_results.setText(results)
         self.progress_bar.setValue(100)

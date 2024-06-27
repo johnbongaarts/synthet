@@ -4,6 +4,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import joblib
 import os
+from src.audio_processing import TOTAL_FEATURES
 
 def train_genre_classifier(data_file, model_output, scaler_output):
     if not os.path.exists(data_file):
@@ -40,6 +41,8 @@ def train_genre_classifier(data_file, model_output, scaler_output):
     joblib.dump(scaler, scaler_output)
     print("Model and scaler saved successfully.")
 
+from src.audio_processing import TEMPO_INDEX, SPECTRAL_CENTROID_INDEX, SPECTRAL_BANDWIDTH_INDEX, MFCC_END
+
 def predict_genre(audio_features, model_file, scaler_file):
     try:
         clf = joblib.load(model_file)
@@ -48,7 +51,9 @@ def predict_genre(audio_features, model_file, scaler_file):
         print("Classifier or scaler not found. Unable to predict genre.")
         return None
 
-    features_scaled = scaler.transform(audio_features.reshape(1, -1))
+    # Use features up to MFCCs for genre classification
+    genre_features = audio_features[:TOTAL_FEATURES]
+    features_scaled = scaler.transform(genre_features.reshape(1, -1))
     genre_prediction = clf.predict(features_scaled)[0]
     genre_probabilities = clf.predict_proba(features_scaled)[0]
     top_genres = sorted(zip(clf.classes_, genre_probabilities), key=lambda x: x[1], reverse=True)[:3]

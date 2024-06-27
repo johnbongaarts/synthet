@@ -68,3 +68,6 @@ def prepare_dataset(audio_dir, metadata_path, output_path, num_files=None):
     np.savez(output_path, X=X, y=y)
     print(f"Dataset saved to {output_path}")
     print(f"Total tracks processed: {len(X)}")
+    pass
+
+__all__ = ['prepare_dataset']
