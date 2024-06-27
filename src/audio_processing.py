@@ -1,5 +1,8 @@
 import librosa
 import numpy as np
+from src.feature_config import get_feature_config
+
+FEATURE_CONFIG = get_feature_config()
 
 # Define feature indices
 TOTAL_FEATURES = 28
@@ -50,15 +53,15 @@ def analyze_audio(file_path, progress_bar=None):
     rms = librosa.feature.rms(y=y).mean()
 
     # Combine all features
-    features = np.zeros(TOTAL_FEATURES)
-    features[TEMPO_INDEX] = tempo
-    features[SPECTRAL_CENTROID_INDEX] = spectral_centroid
-    features[SPECTRAL_BANDWIDTH_INDEX] = spectral_bandwidth
-    features[SPECTRAL_CONTRAST_START:SPECTRAL_CONTRAST_END] = spectral_contrast[:6]
-    features[SPECTRAL_ROLLOFF_INDEX] = spectral_rolloff
-    features[CHROMA_START:CHROMA_END] = chroma_means[:5]
-    features[MFCC_START:MFCC_END] = mfcc_means[:12]
-    features[RMS_INDEX] = rms
+    features = np.zeros(FEATURE_CONFIG['TOTAL_FEATURES'])
+    features[FEATURE_CONFIG['TEMPO']] = tempo
+    features[FEATURE_CONFIG['SPECTRAL_CENTROID']] = spectral_centroid
+    features[FEATURE_CONFIG['SPECTRAL_BANDWIDTH']] = spectral_bandwidth
+    features[FEATURE_CONFIG['SPECTRAL_CONTRAST_START']:FEATURE_CONFIG['SPECTRAL_CONTRAST_END']] = spectral_contrast[:6]
+    features[FEATURE_CONFIG['SPECTRAL_ROLLOFF']] = spectral_rolloff
+    features[FEATURE_CONFIG['CHROMA_START']:FEATURE_CONFIG['CHROMA_END']] = chroma_means[:5]
+    features[FEATURE_CONFIG['MFCC_START']:FEATURE_CONFIG['MFCC_END']] = mfcc_means
+    features[FEATURE_CONFIG['RMS']] = rms
     
     if progress_bar:
         progress_bar.setValue(80)

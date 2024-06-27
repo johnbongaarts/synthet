@@ -2,9 +2,9 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPRegressor
 import joblib
-from src import TOTAL_FEATURES
+from src.feature_config import get_feature_config
 
-
+FEATURE_CONFIG = get_feature_config()
 
 class MoodDetector:
     def __init__(self):
@@ -16,7 +16,7 @@ class MoodDetector:
         self.model.fit(X_scaled, y)
 
     def predict(self, features):
-        assert len(features) == TOTAL_FEATURES, "Unexpected number of features"
+        assert len(features) == FEATURE_CONFIG['TOTAL_FEATURES'], f"Expected {FEATURE_CONFIG['TOTAL_FEATURES']} features, but got {len(features)}"
         X_scaled = self.scaler.transform(features.reshape(1, -1))
         return self.model.predict(X_scaled)[0]
 

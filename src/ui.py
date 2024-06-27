@@ -47,8 +47,10 @@ class AudioAnalyzerApp(QWidget):
         self.setWindowTitle('Audio Analyzer')
 
     def selectFile(self):
-        fname, _ = QFileDialog.getOpenFileName(self, 'Open file', '', "Wave files (*.wav)")
+        fname, _ = QFileDialog.getOpenFileName(self, 'Open file', self.last_directory, "Wave files (*.wav)")
         if fname:
+            self.last_directory = os.path.dirname(fname)
+            self.save_last_directory(self.last_directory)
             self.analyzeAudio(fname)
 
     def analyzeAudio(self, file_path):
