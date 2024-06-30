@@ -39,6 +39,8 @@ class WaveformWidget(QWidget):
         
         self.ax.clear()
         self.ax.plot(time_downsampled, y_downsampled)
+        self.ax.set_xlabel('Time (Seconds)')
+        self.ax.set_ylabel('Amplitude (Peak RMS)')
         self.ax.set_title('Audio Waveform')
         self.canvas.draw()
 
@@ -200,7 +202,7 @@ class AudioAnalyzerApp(QWidget):
         main_layout.addWidget(splitter)
 
         self.setLayout(main_layout)
-        self.setGeometry(100, 100, 1400, 800)  # Increased width
+        self.setGeometry(100, 100, 1400, 1000)  # Increased width
         self.setWindowTitle('Audio Analyzer')
 
 
