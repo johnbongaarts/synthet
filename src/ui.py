@@ -17,12 +17,21 @@ class WaveformWidget(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.canvas)
         self.setLayout(layout)
-        self.setMinimumSize(500, 300)  # Width, Height
+        # self.setMinimumSize(500, 300)  # Width, Height
+
+        self.setup_plot()
+
+    def setup_plot(self):
+        self.ax.clear()
+        self.ax.set_xlabel('Time (Seconds)')
+        self.ax.set_ylabel('Amplitude (Peak RMS)')
+        self.ax.set_title('Audio Waveform')
+        self.canvas.draw()
 
     def plot_waveform(self, audio_path):
         y, sr = librosa.load(audio_path)
         time = np.linspace(0, len(y) / sr, num=len(y))
-        
+
         # Downsample for visualization
         downsample_factor = max(1, len(y) // 1000)
         y_downsampled = y[::downsample_factor]
@@ -30,10 +39,9 @@ class WaveformWidget(QWidget):
         
         self.ax.clear()
         self.ax.plot(time_downsampled, y_downsampled)
-        self.ax.set_xlabel('Time')
-        self.ax.set_ylabel('Amplitude')
         self.ax.set_title('Audio Waveform')
         self.canvas.draw()
+
 
 class MoodPlotWidget(QWidget):
     def __init__(self, parent=None):
@@ -43,8 +51,7 @@ class MoodPlotWidget(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.canvas)
         self.setLayout(layout)
-        self.setMinimumSize(500, 300)  # Width, Height
-
+        # self.setMinimumSize(500, 300)  # Width, Height
         self.setup_plot()
 
         # Set up the plot
@@ -106,6 +113,7 @@ class AudioAnalyzerApp(QWidget):
         if fname:
             self.last_directory = os.path.dirname(fname)
             self.save_last_directory(self.last_directory)
+            self.file_name_label.setText(os.path.basename(fname))
             self.analyzeAudio(fname)
 
     def apply_styles(self):
@@ -161,6 +169,12 @@ class AudioAnalyzerApp(QWidget):
         self.progress_bar = QProgressBar(self)
         file_layout.addWidget(self.progress_bar)
         left_layout.addLayout(file_layout)
+
+        # File name display
+        self.file_name_label = QLabel("No file selected", self)
+        self.file_name_label.setAlignment(Qt.AlignCenter)
+        self.file_name_label.setStyleSheet("font-weight: bold;")
+        left_layout.addWidget(self.file_name_label)
 
         # Plots
         self.waveform_widget = WaveformWidget(self)
