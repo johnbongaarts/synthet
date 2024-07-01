@@ -2,13 +2,15 @@ import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout, QFileDialog, QTextEdit, QProgressBar, QLabel, QSplitter, QDesktopWidget
 import os
 import pickle
-from src import MoodDetector, mood_to_label, analyze_audio, predict_genre
+from src.mood_detector import MoodDetector, mood_to_label
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import librosa
 import numpy as np
 from PyQt5.QtCore import Qt
+from src.audio_processing import analyze_audio
+from src.genre_classifier import predict_genre
 
 class WaveformWidget(QWidget):
     def __init__(self, parent=None):
@@ -64,7 +66,6 @@ class WaveformWidget(QWidget):
 
         self.figure.tight_layout()
         self.canvas.draw()
-
 
 class MoodPlotWidget(QWidget):
     def __init__(self, parent=None):
@@ -168,11 +169,10 @@ class AudioAnalyzerApp(QWidget):
     def __init__(self):
         super().__init__()
         self.last_directory = self.load_last_directory()
+        self.mood_detector = MoodDetector.load('../models/mood_scaler.joblib', '../models/mood_model.joblib')
         self.initUI()
         self.apply_dark_mode_style()
-        #self.apply_styles()
-        #self.setMinimumSize(400, 300)  # Width, Height
-
+        
     def position_window(self):
         # Get the screen geometry
         screen = QDesktopWidget().screenNumber(QDesktopWidget().cursor().pos())
@@ -354,10 +354,10 @@ class AudioAnalyzerApp(QWidget):
         self.progress_bar.setValue(0)
         features, basic_stats = analyze_audio(file_path, self.progress_bar)
         
-        genre_prediction, top_genres = predict_genre(features, 'genre_classifier.joblib', 'genre_scaler.joblib')
+        genre_prediction, top_genres = predict_genre(features, '../models/genre_classifier.joblib', '../models/genre_scaler.joblib')
 
         # Mood detection
-        mood_detector = MoodDetector.load('mood_scaler.joblib', 'mood_model.joblib')
+        mood_detector = MoodDetector.load('../models/mood_scaler.joblib', '../models/mood_model.joblib')
         valence, arousal = mood_detector.predict(features)
         mood_label = mood_to_label(valence, arousal)
 

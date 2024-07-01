@@ -2,8 +2,6 @@ import os
 import pandas as pd
 import numpy as np
 import librosa
-import random
-
 
 def load_metadata(metadata_path):
     print(f"Attempting to load metadata from {metadata_path}")
@@ -40,7 +38,7 @@ def extract_features(file_path):
     ])
     return features
 
-def prepare_dataset(audio_dir, metadata_path, output_path, num_files=None):
+def prepare_fma_dataset(audio_dir, metadata_path, output_path, num_files=None):
     tracks = load_metadata(metadata_path)
     
     features = []
@@ -71,7 +69,7 @@ def prepare_dataset(audio_dir, metadata_path, output_path, num_files=None):
     print(f"Dataset saved to {output_path}")
     print(f"Total tracks processed: {len(X)}")
 
-def prepare_dataset_balanced(audio_dir, metadata_path, output_path, num_files=None):
+def prepare_fma_dataset_balanced(audio_dir, metadata_path, output_path, num_files=None):
     tracks = load_metadata(metadata_path)
     
     # Group tracks by genre
@@ -141,6 +139,6 @@ def prepare_dataset_balanced(audio_dir, metadata_path, output_path, num_files=No
 if __name__ == "__main__":
     audio_dir = r"F:\Audio Data Sets\FMA\fma_small"
     metadata_path = r"F:\Audio Data Sets\FMA\fma_metadata\tracks.csv"
-    output_path = "fma_features_subset.npz"
+    output_path = "../models/fma_features_subset.npz"
     num_files = 1000  # Process only 1000 files
-    prepare_dataset(audio_dir, metadata_path, output_path, num_files)
+    prepare_fma_dataset(audio_dir, metadata_path, output_path, num_files)

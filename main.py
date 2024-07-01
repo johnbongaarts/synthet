@@ -1,64 +1,45 @@
+import sys
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout
 
-from src import prepare_dataset, train_genre_classifier, MoodDetector, run_app, TOTAL_FEATURES
-import numpy as np
+from src.ui import AudioAnalyzerApp
+from src.preparation_ui import PreparationApp
 
-def train_mood_detector(data_path, scaler_path, model_path):
-    data = np.load(data_path)
-    X = data['X']
-    
-    print(f"Shape of X: {X.shape}")
-    print(f"TOTAL_FEATURES: {TOTAL_FEATURES}")
-    
-    assert X.shape[1] == TOTAL_FEATURES, "Unexpected number of features in dataset"
-    
-    # For this example, we'll generate random mood labels
-    # In a real scenario, you'd use actual mood labels
-    y = np.random.rand(X.shape[0], 2)  # Random valence and arousal values
-    
-    detector = MoodDetector()
-    detector.train(X, y)
-    detector.save(scaler_path, model_path)
-    print("Mood detector trained and saved.")
+class ChoiceWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
 
-def inspect_dataset(data_path):
-    data = np.load(data_path)
-    X = data['X']
-    y = data['y']
-    
-    print(f"Shape of X: {X.shape}")
-    print(f"Shape of y: {y.shape}")
-    print(f"Number of features: {X.shape[1]}")
-    
-    # Print the first few rows of X to see the feature values
-    print("\nFirst few rows of X:")
-    print(X[:5])
-    
-    # Print unique values in y to see what labels we have
-    print("\nUnique values in y:")
-    print(np.unique(y))
+    def initUI(self):
+        layout = QVBoxLayout()
 
-    return X.shape[1]  # Return the number of features
+        btn_main = QPushButton('Run Audio Analyzer', self)
+        btn_main.clicked.connect(self.run_main_app)
+        layout.addWidget(btn_main)
 
-if __name__ == "__main__":
-    data_path = 'fma_features_subset.npz'
-    num_features = inspect_dataset(data_path)
-    
-    print(f"\nTotal number of features in the dataset: {num_features}")
+        btn_prep = QPushButton('Run Data Preparation', self)
+        btn_prep.clicked.connect(self.run_prep_app)
+        layout.addWidget(btn_prep)
 
-    # Uncomment these lines if you need to prepare the dataset and train the classifier
-    # audio_dir = r"F:\Audio Data Sets\FMA\fma_small"
-    # metadata_path = r"F:\Audio Data Sets\FMA\fma_metadata\tracks.csv"
-    # output_path = "fma_features_subset.npz"
-    # num_files = 50  # Process up to 1000 files, or set to None to process all available files
-   
-    # Prepare dataset
-    # prepare_dataset(audio_dir, metadata_path, output_path, num_files)
-    
-    # Train classifier
-    # train_genre_classifier(output_path, 'genre_classifier.joblib', 'genre_scaler.joblib')
+        self.setLayout(layout)
+        self.setGeometry(300, 300, 300, 200)
+        self.setWindowTitle('Choose Application')
 
-    # Train mood detector
-    train_mood_detector('fma_features_subset.npz', 'mood_scaler.joblib', 'mood_model.joblib')
 
-    # Run the UI application
-    run_app()
+    def run_main_app(self):
+        self.hide()
+        self.main_app = AudioAnalyzerApp()
+        self.main_app.show()
+
+    def run_prep_app(self):
+        self.hide()
+        self.prep_app = PreparationApp()
+        self.prep_app.show()
+
+def main():
+    app = QApplication(sys.argv)
+    ex = ChoiceWindow()
+    ex.show()
+    sys.exit(app.exec_())
+
+if __name__ == '__main__':
+    main()
