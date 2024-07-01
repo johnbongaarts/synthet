@@ -120,8 +120,8 @@ class PreparationApp(QWidget):
         layout = QVBoxLayout()
         
         default_deam_audio = os.path.expanduser("F:/Audio Data Sets/DEAM/MEMD_audio")
-        default_deam_annotations = os.path.expanduser("F:/DEAM/annotations/annotations.csv")
-        default_deam_output = os.path.expanduser("./datasets/deam_features.npz")
+        default_deam_annotations = os.path.expanduser("F:/Audio Data Sets/DEAM/annotations/annotations.csv")
+        default_deam_output = os.path.expanduser("F:/Audio Data Sets/DEAM/deam_features.npz")
 
         self.deam_audio_dir = QLabel(f"Audio Directory: {default_deam_audio}")
         self.deam_annotations = QLabel(f"Annotations File: {default_deam_annotations}")
@@ -131,6 +131,15 @@ class PreparationApp(QWidget):
         layout.addWidget(self.deam_annotations)
         layout.addWidget(self.deam_output)
         
+        # Add file count control
+        file_count_layout = QHBoxLayout()
+        file_count_label = QLabel("Number of files to process (blank for all):")
+        self.deam_file_count_input = QLineEdit()
+        self.deam_file_count_input.setPlaceholderText("Leave blank to process all files")
+        file_count_layout.addWidget(file_count_label)
+        file_count_layout.addWidget(self.deam_file_count_input)
+        layout.addLayout(file_count_layout)
+
         btn_audio = QPushButton("Select Audio Directory")
         btn_audio.clicked.connect(lambda: self.selectDirectory(self.deam_audio_dir, "Audio Directory"))
         
@@ -239,8 +248,12 @@ class PreparationApp(QWidget):
         annotations_file = self.deam_annotations.text().split(": ")[1]
         output_file = self.deam_output.text().split(": ")[1]
         
+        # Get the number of files to process
+        file_count_text = self.deam_file_count_input.text().strip()
+        num_files = int(file_count_text) if file_count_text else None
+
         try:
-            prepare_deam_dataset(audio_dir, annotations_file, output_file, progress_callback=self.updateProgress)
+            prepare_deam_dataset(audio_dir, annotations_file, output_file, num_files=num_files, progress_callback=self.updateProgress)
             self.showMessage("DEAM dataset preparation completed successfully!")
         except Exception as e:
             self.showMessage(f"Error preparing DEAM dataset: {str(e)}")
