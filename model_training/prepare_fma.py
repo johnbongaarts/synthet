@@ -38,107 +38,43 @@ def extract_features(file_path):
     ])
     return features
 
-def prepare_fma_dataset(audio_dir, metadata_path, output_path, num_files=None):
+def prepare_fma_dataset(audio_dir, metadata_path, output_path, num_files=None, progress_callback=None):
     tracks = load_metadata(metadata_path)
     
+    if num_files is not None:
+        tracks = tracks.head(num_files)
+    
+    total_files = len(tracks)
     features = []
     genres = []
-    processed_count = 0
     
-    for index, row in tracks.iterrows():
-        if num_files is not None and processed_count >= num_files:
-            break
-        
-        file_path = get_audio_path(audio_dir, index)
+    for index, (track_id, row) in enumerate(tracks.iterrows()):
+        file_path = get_audio_path(audio_dir, track_id)
         if os.path.exists(file_path):
             try:
                 feature = extract_features(file_path)
                 features.append(feature)
                 genres.append(row['track', 'genre_top'])
-                processed_count += 1
-                print(f"Successfully processed {file_path} ({processed_count}/{num_files if num_files else len(tracks)})")
+                print(f"Successfully processed {file_path} ({index+1}/{total_files})")
             except Exception as e:
                 print(f"Error processing {file_path}: {e}")
         else:
             print(f"File does not exist: {file_path}")
 
+        if progress_callback:
+            progress = int((index + 1) / total_files * 100)
+            progress_callback(progress)
+
     X = np.array(features)
     y = np.array(genres)
     
     np.savez(output_path, X=X, y=y)
     print(f"Dataset saved to {output_path}")
-    print(f"Total tracks processed: {len(X)}")
-
-def prepare_fma_dataset_balanced(audio_dir, metadata_path, output_path, num_files=None):
-    tracks = load_metadata(metadata_path)
-    
-    # Group tracks by genre
-    genre_groups = tracks.groupby(('track', 'genre_top'))
-    
-    print("Tracks per genre:")
-    for genre, group in genre_groups:
-        print(f"{genre}: {len(group)}")
-    
-    if num_files is not None:
-        # Calculate how many tracks to take from each genre
-        files_per_genre = num_files // len(genre_groups)
-        remainder = num_files % len(genre_groups)
-        print(f"Aiming to process {files_per_genre} files per genre, with {remainder} extra")
-    else:
-        files_per_genre = None
-    
-    features = []
-    genres = []
-    
-    for genre, group in genre_groups:
-        if files_per_genre is not None:
-            n_samples = min(files_per_genre, len(group))
-            group_tracks = group.sample(n=n_samples, random_state=42)
-        else:
-            group_tracks = group
-        
-        print(f"Processing {len(group_tracks)} tracks for genre {genre}")
-        
-        for index, row in group_tracks.iterrows():
-            file_path = get_audio_path(audio_dir, index)
-            print(f"Attempting to process file: {file_path}")
-            if os.path.exists(file_path):
-                try:
-                    feature = extract_features(file_path)
-                    features.append(feature)
-                    genres.append(genre)
-                    print(f"Successfully processed {file_path}")
-                except Exception as e:
-                    print(f"Error processing {file_path}: {e}")
-            else:
-                print(f"File does not exist: {file_path}")
-        
-        if remainder > 0 and files_per_genre is not None and len(group) > files_per_genre:
-            extra_track = group.drop(group_tracks.index).sample(n=1, random_state=42).iloc[0]
-            file_path = get_audio_path(audio_dir, extra_track.name)
-            print(f"Attempting to process extra file: {file_path}")
-            if os.path.exists(file_path):
-                try:
-                    feature = extract_features(file_path)
-                    features.append(feature)
-                    genres.append(genre)
-                    print(f"Successfully processed extra file {file_path}")
-                    remainder -= 1
-                except Exception as e:
-                    print(f"Error processing extra file {file_path}: {e}")
-            else:
-                print(f"Extra file does not exist: {file_path}")
-    
-    X = np.array(features)
-    y = np.array(genres)
-    
-    np.savez(output_path, X=X, y=y)
-    print(f"Dataset saved to {output_path}")
-    print(f"Total tracks processed: {len(X)}")
-
+    print(f"Total tracks processed: {len(X)}")   
+   
 if __name__ == "__main__":
     audio_dir = r"F:\Audio Data Sets\FMA\fma_small"
     metadata_path = r"F:\Audio Data Sets\FMA\fma_metadata\tracks.csv"
-    output_path = "../models/fma_features_subset.npz"
+    output_path = "F:\Audio Data Sets\FMA\fma_small_features.npz"
     num_files = 1000  # Process only 1000 files
     prepare_fma_dataset(audio_dir, metadata_path, output_path, num_files)

@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QFileDialog, QTextEdit, QProgressBar, QLabel, QTabWidget
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QFileDialog, QTextEdit, QProgressBar, QLabel, QTabWidget, QLineEdit
 from PyQt5.QtCore import Qt
 import os
 from model_training.prepare_fma import prepare_fma_dataset
@@ -32,13 +32,26 @@ class PreparationApp(QWidget):
         widget = QWidget()
         layout = QVBoxLayout()
         
-        self.fma_audio_dir = QLabel("Audio Directory: Not selected")
-        self.fma_metadata = QLabel("Metadata File: Not selected")
-        self.fma_output = QLabel("Output File: Not selected")
-        
+        default_fma_audio = os.path.expanduser("F:/Audio Data Sets/FMA/fma_small")
+        default_fma_metadata = os.path.expanduser("F:/Audio Data Sets/FMA/fma_metadata/tracks.csv")
+        default_fma_output = os.path.expanduser("F:/Audio Data Sets/FMA/fma_small_features.npz")
+
+        self.fma_audio_dir = QLabel(f"Audio Directory: {default_fma_audio}")
+        self.fma_metadata = QLabel(f"Metadata File: {default_fma_metadata}")
+        self.fma_output = QLabel(f"Output File: {default_fma_output}")
+
         layout.addWidget(self.fma_audio_dir)
         layout.addWidget(self.fma_metadata)
         layout.addWidget(self.fma_output)
+
+        # Add input for number of files
+        num_files_layout = QHBoxLayout()
+        num_files_label = QLabel("Number of files to process (blank for all):")
+        self.num_files_input = QLineEdit()
+        self.num_files_input.setPlaceholderText("Leave blank to process all files")
+        num_files_layout.addWidget(num_files_label)
+        num_files_layout.addWidget(self.num_files_input)
+        layout.addLayout(num_files_layout)
         
         btn_audio = QPushButton("Select Audio Directory")
         btn_audio.clicked.connect(lambda: self.selectDirectory(self.fma_audio_dir, "Audio Directory"))
@@ -67,9 +80,13 @@ class PreparationApp(QWidget):
         widget = QWidget()
         layout = QVBoxLayout()
         
-        self.genre_data_file = QLabel("Data File: Not selected")
-        self.genre_model_output = QLabel("Model Output: Not selected")
-        self.genre_scaler_output = QLabel("Scaler Output: Not selected")
+        default_genre_data = os.path.expanduser("./datasets/fma_features.npz")
+        default_genre_model = os.path.expanduser("./models/genre_classifier.joblib")
+        default_genre_scaler = os.path.expanduser("./models/genre_scaler.joblib")
+
+        self.genre_data_file = QLabel(f"Data File: {default_genre_data}")
+        self.genre_model_output = QLabel(f"Model Output: {default_genre_model}")
+        self.genre_scaler_output = QLabel(f"Scaler Output: {default_genre_scaler}")
         
         layout.addWidget(self.genre_data_file)
         layout.addWidget(self.genre_model_output)
@@ -102,9 +119,13 @@ class PreparationApp(QWidget):
         widget = QWidget()
         layout = QVBoxLayout()
         
-        self.deam_audio_dir = QLabel("Audio Directory: Not selected")
-        self.deam_annotations = QLabel("Annotations File: Not selected")
-        self.deam_output = QLabel("Output File: Not selected")
+        default_deam_audio = os.path.expanduser("F:/Audio Data Sets/DEAM/MEMD_audio")
+        default_deam_annotations = os.path.expanduser("F:/DEAM/annotations/annotations.csv")
+        default_deam_output = os.path.expanduser("./datasets/deam_features.npz")
+
+        self.deam_audio_dir = QLabel(f"Audio Directory: {default_deam_audio}")
+        self.deam_annotations = QLabel(f"Annotations File: {default_deam_annotations}")
+        self.deam_output = QLabel(f"Output File: {default_deam_output}")
         
         layout.addWidget(self.deam_audio_dir)
         layout.addWidget(self.deam_annotations)
@@ -137,9 +158,13 @@ class PreparationApp(QWidget):
         widget = QWidget()
         layout = QVBoxLayout()
         
-        self.mood_data_file = QLabel("Data File: Not selected")
-        self.mood_model_output = QLabel("Model Output: Not selected")
-        self.mood_scaler_output = QLabel("Scaler Output: Not selected")
+        default_mood_data = os.path.expanduser("./datasets/deam_features.npz")
+        default_mood_model = os.path.expanduser("./models/mood_model.joblib")
+        default_mood_scaler = os.path.expanduser("./models/mood_scaler.joblib")
+
+        self.mood_data_file = QLabel(f"Data File: {default_mood_data}")
+        self.mood_model_output = QLabel(f"Model Output: {default_mood_model}")
+        self.mood_scaler_output = QLabel(f"Scaler Output: {default_mood_scaler}")
         
         layout.addWidget(self.mood_data_file)
         layout.addWidget(self.mood_model_output)
@@ -188,8 +213,12 @@ class PreparationApp(QWidget):
         metadata_path = self.fma_metadata.text().split(": ")[1]
         output_path = self.fma_output.text().split(": ")[1]
         
+        # Get the number of files to process
+        num_files_text = self.num_files_input.text().strip()
+        num_files = int(num_files_text) if num_files_text else None
+        
         try:
-            prepare_fma_dataset(audio_dir, metadata_path, output_path, progress_callback=self.updateProgress)
+            prepare_fma_dataset(audio_dir, metadata_path, output_path, num_files=num_files, progress_callback=self.updateProgress)
             self.showMessage("FMA dataset preparation completed successfully!")
         except Exception as e:
             self.showMessage(f"Error preparing FMA dataset: {str(e)}")
