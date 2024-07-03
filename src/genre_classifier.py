@@ -4,9 +4,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import joblib
 import os
-from src.feature_config import get_feature_config
+from src.feature_config import get_genre_feature_config
 
-FEATURE_CONFIG = get_feature_config()
+FEATURE_CONFIG = get_genre_feature_config()
 
 def train_genre_classifier(data_file, model_output, scaler_output):
     if not os.path.exists(data_file):

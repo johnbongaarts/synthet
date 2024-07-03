@@ -169,7 +169,7 @@ class AudioAnalyzerApp(QWidget):
     def __init__(self):
         super().__init__()
         self.last_directory = self.load_last_directory()
-        self.mood_detector = MoodDetector.load('../models/mood_scaler.joblib', '../models/mood_model.joblib')
+        self.mood_detector = MoodDetector.load('./models/mood_scaler.joblib', './models/mood_model.joblib')
         self.initUI()
         self.apply_dark_mode_style()
         
@@ -354,10 +354,10 @@ class AudioAnalyzerApp(QWidget):
         self.progress_bar.setValue(0)
         features, basic_stats = analyze_audio(file_path, self.progress_bar)
         
-        genre_prediction, top_genres = predict_genre(features, '../models/genre_classifier.joblib', '../models/genre_scaler.joblib')
+        genre_prediction, top_genres = predict_genre(features, './models/genre_classifier.joblib', './models/genre_scaler.joblib')
 
         # Mood detection
-        mood_detector = MoodDetector.load('../models/mood_scaler.joblib', '../models/mood_model.joblib')
+        mood_detector = MoodDetector.load('./models/mood_scaler.joblib', './models/mood_model.joblib')
         valence, arousal = mood_detector.predict(features)
         mood_label = mood_to_label(valence, arousal)
 
